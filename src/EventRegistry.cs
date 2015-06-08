@@ -20,7 +20,7 @@ namespace LibEventManagerCSharp
             return eventFactory.NewEventFactory(this);
         }
 
-        internal bool Call<Event>(Event e) where Event : LibEventManagerCSharp.Event
+        internal Event Call<Event>(Event e) where Event : LibEventManagerCSharp.Event
         {
             List<EventListener> listenersCopy = new List<EventListener>();
             listenersCopy.AddRange(listeners);
@@ -46,7 +46,7 @@ namespace LibEventManagerCSharp
 
             if (remove) Remove<Event>();
 
-            return !e.Cancelled();
+            return e;
         }
 
         public void Remove<Event>() where Event : LibEventManagerCSharp.Event

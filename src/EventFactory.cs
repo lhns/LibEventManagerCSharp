@@ -10,7 +10,7 @@ namespace LibEventManagerCSharp
     {
         protected internal abstract Factory NewEventFactory(EventRegistry registry);
 
-        protected bool Call(EventRegistry registry, Event e)
+        protected Event Call(EventRegistry registry, Event e)
         {
             return registry.Call(e);
         }

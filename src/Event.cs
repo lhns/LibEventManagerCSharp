@@ -20,8 +20,8 @@ namespace LibEventManagerCSharp
             return cancelled;
         }
 
-        public virtual void OnEventPre() { }
+        protected internal virtual void OnEventPre() { }
 
-        public virtual void OnEventPost(ref bool remove) { }
+        protected internal virtual void OnEventPost(ref bool remove) { }
     }
 }
