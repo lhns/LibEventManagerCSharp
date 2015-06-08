@@ -36,7 +36,7 @@ namespace LibEventManagerCSharp
                 else if (listener.type == e.GetType())
                 {
                     listener.action(e);
-                    if (e.Cancelled()) break;
+                    if (e.Cancelled) break;
                 }
             }
 
