@@ -1,0 +1,7 @@
+bin/
+obj/
+App.config
+*.sln
+*.suo
+*.csproj.user
+Thumbs.db
