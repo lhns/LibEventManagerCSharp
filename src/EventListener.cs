@@ -22,7 +22,7 @@ namespace LibEventManagerCSharp
         {
             this.action = action;
             this.type = type;
-            monitor = monitor == null ? null : new WeakReference(monitor);
+            this.monitor = monitor == null ? null : new WeakReference(monitor);
         }
     }
 }
