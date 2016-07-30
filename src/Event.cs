@@ -4,21 +4,14 @@ namespace LibEventManagerCSharp
 {
     public class Event
     {
-        private Boolean cancelled = false;
+        public bool Cancelled { get; set; } = false;
 
-        public bool Cancelled
+        protected internal virtual void OnEventPre()
         {
-            get {
-                return cancelled;
-            }
-            set
-            {
-                cancelled = value;
-            }
         }
 
-        protected internal virtual void OnEventPre() { }
-
-        protected internal virtual void OnEventPost(ref bool remove) { }
+        protected internal virtual void OnEventPost(ref bool remove)
+        {
+        }
     }
 }

@@ -5,50 +5,45 @@ namespace LibEventManagerCSharp
 {
     public class EventRegistry
     {
-        private List<EventListener> listeners = new List<EventListener>();
+        private readonly List<EventListener> _listeners = new List<EventListener>();
 
-        public void Register<Event>(Action<Event> listener, Object monitor = null) where Event : LibEventManagerCSharp.Event
+        public void Register<TEvent>(Action<TEvent> listener, object monitor = null) where TEvent : Event
         {
-            listeners.Add(new EventListener(e => listener((Event)e), typeof(Event), monitor));
+            _listeners.Add(new EventListener(e => listener((TEvent) e), typeof(TEvent), monitor));
         }
 
-        public Factory Call<Event, Factory>(EventFactory<Event, Factory> eventFactory) where Event : LibEventManagerCSharp.Event
+        public TEvent Call<TEvent>(TEvent e) where TEvent : Event
         {
-            return eventFactory.NewEventFactory(this);
-        }
-
-        internal Event Call<Event>(Event e) where Event : LibEventManagerCSharp.Event
-        {
-            List<EventListener> listenersCopy = new List<EventListener>();
-            listenersCopy.AddRange(listeners);
+            var listenersCopy = new List<EventListener>();
+            listenersCopy.AddRange(_listeners);
 
             e.OnEventPre();
 
-            foreach (EventListener listener in listenersCopy)
+            foreach (var listener in listenersCopy)
             {
                 if (!listener.IsAlive)
                 {
-                    listeners.Remove(listener);
+                    _listeners.Remove(listener);
                 }
-                else if (listener.type == e.GetType())
+                else if (listener.Type == e.GetType())
                 {
-                    listener.action(e);
+                    listener.Action(e);
                     if (e.Cancelled) break;
                 }
             }
 
-            bool remove = false;
+            var remove = false;
 
             e.OnEventPost(ref remove);
 
-            if (remove) Remove<Event>();
+            if (remove) Remove<TEvent>();
 
             return e;
         }
 
-        public void Remove<Event>() where Event : LibEventManagerCSharp.Event
+        public void Remove<TEvent>() where TEvent : Event
         {
-            listeners.RemoveAll(listener => listener.type == typeof(Event));
+            _listeners.RemoveAll(listener => listener.Type == typeof(TEvent));
         }
     }
 }

@@ -38,7 +38,6 @@
     <Compile Include="src\Event.cs" />
     <Compile Include="src\EventListener.cs" />
     <Compile Include="src\EventRegistry.cs" />
-    <Compile Include="src\EventFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitattributes" />

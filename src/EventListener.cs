@@ -4,21 +4,17 @@ namespace LibEventManagerCSharp
 {
     internal class EventListener
     {
-        public readonly Action<Event> action;
-        public readonly Type type;
+        public Action<Event> Action { get; }
+        public Type Type { get; }
+        private readonly WeakReference _monitor;
 
-        private WeakReference monitor;
-
-        public bool IsAlive
-        {
-            get { return action != null && type != null && (monitor == null || monitor.IsAlive); }
-        }
+        public bool IsAlive => Action != null && Type != null && (_monitor == null || _monitor.IsAlive);
 
         public EventListener(Action<Event> action, Type type, Object monitor)
         {
-            this.action = action;
-            this.type = type;
-            this.monitor = monitor == null ? null : new WeakReference(monitor);
+            this.Action = action;
+            this.Type = type;
+            this._monitor = monitor == null ? null : new WeakReference(monitor);
         }
     }
 }
