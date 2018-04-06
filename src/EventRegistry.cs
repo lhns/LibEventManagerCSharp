@@ -5,45 +5,80 @@ namespace LibEventManagerCSharp
 {
     public class EventRegistry
     {
-        private readonly List<EventListener> _listeners = new List<EventListener>();
+        private volatile List<WeakReference<EventListener>> listeners = new List<WeakReference<EventListener>>();
 
-        public void Register<TEvent>(Action<TEvent> listener, object monitor = null) where TEvent : Event
+        private volatile List<WeakReference<EventListener>> addedListeners = new List<WeakReference<EventListener>>();
+
+        private object listenersLock = new object();
+
+        private object addedListenersLock = new object();
+
+        public EventListener<TEvent> Register<TEvent>(Action<TEvent> action) where TEvent : Event
         {
-            _listeners.Add(new EventListener(e => listener((TEvent) e), typeof(TEvent), monitor));
+            var listener = new EventListener<TEvent>(action);
+            lock (addedListenersLock)
+            {
+                addedListeners.Add(new WeakReference<EventListener>(listener));
+            }
+            return listener;
         }
 
+        public void UnregisterAll<TEvent>() where TEvent : Event
+        {
+            lock (listenersLock)
+            {
+                listeners.ForEach(listenerRef =>
+                {
+                    EventListener listener;
+                    if (listenerRef.TryGetTarget(out listener) && listener.EventType == typeof(TEvent))
+                    {
+                        listener.Unregister();
+                    }
+                });
+            }
+        }
+        
         public TEvent Call<TEvent>(TEvent e) where TEvent : Event
         {
-            var listenersCopy = new List<EventListener>();
-            listenersCopy.AddRange(_listeners);
-
-            e.OnEventPre();
-
-            foreach (var listener in listenersCopy)
-            {
-                if (!listener.IsAlive)
+            lock (listenersLock) {
+                List<WeakReference<EventListener>> tmpListeners;
+                lock (addedListenersLock)
                 {
-                    _listeners.Remove(listener);
+                    tmpListeners = addedListeners;
+                    addedListeners = new List<WeakReference<EventListener>>();
                 }
-                else if (listener.Type == e.GetType())
+
+                tmpListeners.AddRange(listeners);
+
+                e.OnEventPre();
+
+                var newListeners = new List<WeakReference<EventListener>>();
+                foreach (var listenerRef in tmpListeners)
                 {
-                    listener.Action(e);
-                    if (e.Cancelled) break;
+                    EventListener listener;
+                    listenerRef.TryGetTarget(out listener);
+                    if (listener != null && listener.Registered)
+                    {
+                        newListeners.Add(listenerRef);
+                        if (!e.Cancelled && listener is EventListener<TEvent>)
+                        {
+                            (listener as EventListener<TEvent>).Action(e);
+                        }
+                    }
                 }
+
+                listeners = newListeners;
+
+                var remove = false;
+
+                e.OnEventPost(ref remove);
+
+                if (remove) UnregisterAll<TEvent>();
+
+                return e;
             }
-
-            var remove = false;
-
-            e.OnEventPost(ref remove);
-
-            if (remove) Remove<TEvent>();
-
-            return e;
         }
 
-        public void Remove<TEvent>() where TEvent : Event
-        {
-            _listeners.RemoveAll(listener => listener.Type == typeof(TEvent));
-        }
+        
     }
 }

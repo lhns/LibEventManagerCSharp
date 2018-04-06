@@ -4,7 +4,12 @@ namespace LibEventManagerCSharp
 {
     public class Event
     {
-        public bool Cancelled { get; set; } = false;
+        public bool Cancelled { get; private set; }
+
+        public void Cancel()
+        {
+            Cancelled = true;
+        }
 
         protected internal virtual void OnEventPre()
         {
